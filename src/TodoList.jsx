@@ -9,12 +9,11 @@ export default function TodoList() {
         return localStorage.getItem("theme") === "dark";
     });
 
-    // Save Dark Mode in LocalStorage
     useEffect(() => {
-        localStorage.setItem("theme", darkMode ? "dark" : "light");
+        document.body.style.backgroundColor = darkMode ? "black" : "lightblue";
     }, [darkMode]);
 
-    // Function to add or update a task
+
     const addTask = () => {
         if (task.trim() === "") return;
         if (editIndex !== null) {
@@ -29,7 +28,7 @@ export default function TodoList() {
         setTask("");
     };
 
-    // Function to mark task as completed
+
     const markCompleted = (index) => {
         const updatedTasks = tasks.map((t, i) =>
             i === index ? { ...t, completed: !t.completed } : t
@@ -37,30 +36,23 @@ export default function TodoList() {
         setTasks(updatedTasks);
     };
 
-    // Function to edit a task
     const editTask = (index) => {
         setTask(tasks[index].name);
         setEditIndex(index);
     };
 
-    // Function to delete a task
     const removeTask = (index) => {
         setTasks(tasks.filter((_, i) => i !== index));
     };
 
-    // Function to clear all tasks
-    const clearAllTasks = () => {
-        setTasks([]);
-    };
 
-    // Filter tasks based on filter selection
     const filteredTasks = tasks.filter((t) => {
         if (filter === "all") return true;
         if (filter === "completed") return t.completed;
         if (filter === "pending") return !t.completed;
     });
 
-    // Toggle Dark Mode
+
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
     };
@@ -68,47 +60,50 @@ export default function TodoList() {
     return (
         <div style={{
             height: '100vh',
-            backgroundColor: darkMode ? '#121212' : '#f4f4f4',
+            backgroundColor: darkMode ? 'black' : 'lightblue',
             color: darkMode ? 'white' : 'black',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             position: 'relative',
-            transition: 'all 0.3s'
+            transition: 'all 0.5s ease-in-out'
         }}>
 
-            {/* 💎 DARK MODE BUTTON IN UPPER LEFT CORNER */}
             <button
                 onClick={toggleDarkMode}
                 style={{
                     position: 'absolute',
                     top: '20px',
                     left: '20px',
-                    backgroundColor: darkMode ? '#ffb703' : '#007bff',
+                    backgroundColor: darkMode ? 'lightblue' : 'lightblue',
                     color: 'white',
                     padding: '10px 20px',
                     border: 'none',
                     borderRadius: '5px',
-                    cursor: 'pointer'
+                    borderColor : "white",
+                    
                 }}
             >
-                {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
+                {darkMode ? '🤍 ' : '🖤 '}
             </button>
 
-            {/* 💖 THE TASKS CARD */}
+
             <div style={{
-                backgroundColor: darkMode ? '#1c1c1c' : 'white',
+                backgroundColor: darkMode ? 'black' : 'lightblue',
                 padding: '30px',
                 borderRadius: '10px',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                width: '400px'
+                boxShadow: darkMode 
+                    ? '0 10px 30px rgba(255, 255, 255, 0.1)' 
+                    : '0 10px 30px rgba(0, 0, 0, 0.1)',
+                width: '400px',
+                transition: 'all 0.5s ease-in-out'
+
             }}>
-                {/* Header */}
+                
                 <div style={{ textAlign: 'center' }}>
                     <h2>✅ Todo-List App</h2>
                 </div>
 
-                {/* Input Field */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                     <input
                         type="text"
@@ -120,7 +115,7 @@ export default function TodoList() {
                             border: '1px solid #ccc',
                             borderRadius: '5px',
                             width: '100%',
-                            backgroundColor: darkMode ? '#2c2c2c' : 'white',
+                            backgroundColor: darkMode ? 'white' : 'white',
                             color: darkMode ? 'white' : 'black'
                         }}
                     />
@@ -139,16 +134,73 @@ export default function TodoList() {
                     </button>
                 </div>
 
-                {/* Task List */}
+                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+
+<div style={{ 
+    marginBottom: '20px', 
+    textAlign: 'center', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    gap: '10px' 
+}}>
+    <button
+        onClick={() => setFilter("all")}
+        style={{
+            backgroundColor: filter === "all" ? '#007bff' : '#e0e0e0',
+            color: filter === "all" ? 'white' : 'black',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+        }}
+    >
+        All Tasks
+    </button>
+
+    <button
+        onClick={() => setFilter("completed")}
+        style={{
+            backgroundColor: filter === "completed" ? '#32CD32' : '#e0e0e0',
+            color: filter === "completed" ? 'white' : 'black',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+        }}
+    >
+        Completed
+    </button>
+
+    <button
+        onClick={() => setFilter("pending")}
+        style={{
+            backgroundColor: filter === "pending" ? '#FF6347' : '#e0e0e0',
+            color: filter === "pending" ? 'white' : 'black',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+        }}
+    >
+        Pending
+    </button>
+</div>
+
+</div>
+
+
                 <ul style={{ marginTop: '20px', padding: '0' }}>
                     {filteredTasks.length === 0 ? (
-                        <p>wala pay task</p>
+                        <p>No task listed.</p>
                     ) : (
                         filteredTasks.map((t, index) => (
                             <li key={index}
                                 style={{
                                     display: 'flex',
-                                    justifyContent: 'space-between',
+                                   
                                     padding: '10px',
                                     borderBottom: '1px solid #e0e0e0'
                                 }}
@@ -175,7 +227,7 @@ export default function TodoList() {
                                     <button
                                         onClick={() => editTask(index)}
                                         style={{
-                                            backgroundColor: '#FFA500',
+                                            backgroundColor: 'pink',
                                             color: 'white',
                                             padding: '5px 10px',
                                             border: 'none',
