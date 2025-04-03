@@ -15,7 +15,7 @@ export default function TodoList() {
     // Fetch tasks from Django backend
     const fetchTasks = async () => {
         try {
-            const response = await fetch("http://localhost:8000/api/todos/fetch");
+            const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/fetch");
             const data = await response.json();
             setTasks(data);
         } catch (error) {
@@ -31,7 +31,7 @@ export default function TodoList() {
             // Update existing task
             const updatedTask = { ...tasks[editIndex], title: task };
             try {
-                const response = await fetch(`http://localhost:8000/api/todos/${tasks[editIndex].id}/update`, {
+                const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${tasks[editIndex].id}/update`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(updatedTask),
@@ -46,7 +46,7 @@ export default function TodoList() {
             // Add new task
             const newTask = { title: task, completed: false };
             try {
-                const response = await fetch("http://localhost:8000/api/todos/create", {
+                const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newTask),
@@ -66,7 +66,7 @@ export default function TodoList() {
         const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
 
         try {
-            const response = await fetch(`http://localhost:8000/api/todos/${taskToUpdate.id}/update`, {
+            const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${taskToUpdate.id}/update`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedTask),
@@ -83,7 +83,7 @@ export default function TodoList() {
         const taskToDelete = tasks[index];
 
         try {
-            await fetch(`http://localhost:8000/api/todos/${taskToDelete.id}/delete`, {
+            await fetch(`https://todo-list-w-api.onrender.com/api/todos/${taskToDelete.id}/delete`, {
                 method: "DELETE",
             });
             setTasks(tasks.filter((_, i) => i !== index));
