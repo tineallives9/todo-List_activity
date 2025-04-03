@@ -7,8 +7,7 @@ export default function TodoList() {
     const [filter, setFilter] = useState("all");
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
 
-    const API_URL = process.env.REACT_APP_API_URL;  // Get the API URL from the environment variable
-
+    const API_URL = process.env.REACT_APP_API_URL || "https://todo-list-w-api.onrender.com";
     useEffect(() => {
         document.body.style.backgroundColor = darkMode ? "black" : "lightblue";
         fetchTasks();
