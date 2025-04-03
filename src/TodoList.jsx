@@ -7,15 +7,17 @@ export default function TodoList() {
     const [filter, setFilter] = useState("all");
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
 
+    const API_URL = process.env.REACT_APP_API_URL;  // Get the API URL from the environment variable
+
     useEffect(() => {
         document.body.style.backgroundColor = darkMode ? "black" : "lightblue";
         fetchTasks();
     }, [darkMode]);
 
-    // Fetch tasks from Django backend
+    // Fetch tasks from backend using the environment variable
     const fetchTasks = async () => {
         try {
-            const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/fetch");
+            const response = await fetch(`${API_URL}/api/todos/fetch`); // Use API_URL here
             const data = await response.json();
             setTasks(data);
         } catch (error) {
@@ -28,10 +30,9 @@ export default function TodoList() {
         if (task.trim() === "") return;
 
         if (editIndex !== null) {
-            // Update existing task
             const updatedTask = { ...tasks[editIndex], title: task };
             try {
-                const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${tasks[editIndex].id}/update`, {
+                const response = await fetch(`${API_URL}/api/todos/${tasks[editIndex].id}/update`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(updatedTask),
@@ -43,10 +44,9 @@ export default function TodoList() {
                 console.error("Error updating task:", error);
             }
         } else {
-            // Add new task
             const newTask = { title: task, completed: false };
             try {
-                const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/create", {
+                const response = await fetch(`${API_URL}/api/todos/create`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newTask),
@@ -60,13 +60,13 @@ export default function TodoList() {
         setTask("");
     };
 
-    // Toggle task completion
+    // Mark task as completed
     const markCompleted = async (index) => {
         const taskToUpdate = tasks[index];
         const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
 
         try {
-            const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${taskToUpdate.id}/update`, {
+            const response = await fetch(`${API_URL}/api/todos/${taskToUpdate.id}/update`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedTask),
@@ -83,7 +83,7 @@ export default function TodoList() {
         const taskToDelete = tasks[index];
 
         try {
-            await fetch(`https://todo-list-w-api.onrender.com/api/todos/${taskToDelete.id}/delete`, {
+            await fetch(`${API_URL}/api/todos/${taskToDelete.id}/delete`, {
                 method: "DELETE",
             });
             setTasks(tasks.filter((_, i) => i !== index));
