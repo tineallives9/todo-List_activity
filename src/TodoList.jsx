@@ -5,251 +5,193 @@ export default function TodoList() {
     const [task, setTask] = useState("");
     const [editIndex, setEditIndex] = useState(null);
     const [filter, setFilter] = useState("all");
-    const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("theme") === "dark";
-    });
+    const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
 
     useEffect(() => {
         document.body.style.backgroundColor = darkMode ? "black" : "lightblue";
+        fetchTasks();
     }, [darkMode]);
 
+    // Fetch tasks from Django backend
+    const fetchTasks = async () => {
+        try {
+            const response = await fetch("http://localhost:8000/api/todos/fetch");
+            const data = await response.json();
+            setTasks(data);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
+    };
 
-    const addTask = () => {
+    // Add or edit a task
+    const addTask = async () => {
         if (task.trim() === "") return;
+
         if (editIndex !== null) {
-            const updatedTasks = tasks.map((t, i) =>
-                i === editIndex ? { ...t, name: task } : t
-            );
-            setTasks(updatedTasks);
-            setEditIndex(null);
+            // Update existing task
+            const updatedTask = { ...tasks[editIndex], title: task };
+            try {
+                const response = await fetch(`http://localhost:8000/api/todos/${tasks[editIndex].id}/update`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedTask),
+                });
+                const data = await response.json();
+                setTasks(tasks.map((t, i) => (i === editIndex ? data : t)));
+                setEditIndex(null);
+            } catch (error) {
+                console.error("Error updating task:", error);
+            }
         } else {
-            setTasks([...tasks, { name: task, completed: false }]);
+            // Add new task
+            const newTask = { title: task, completed: false };
+            try {
+                const response = await fetch("http://localhost:8000/api/todos/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newTask),
+                });
+                const data = await response.json();
+                setTasks([...tasks, data]);
+            } catch (error) {
+                console.error("Error adding task:", error);
+            }
         }
         setTask("");
     };
 
+    // Toggle task completion
+    const markCompleted = async (index) => {
+        const taskToUpdate = tasks[index];
+        const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
 
-    const markCompleted = (index) => {
-        const updatedTasks = tasks.map((t, i) =>
-            i === index ? { ...t, completed: !t.completed } : t
-        );
-        setTasks(updatedTasks);
+        try {
+            const response = await fetch(`http://localhost:8000/api/todos/${taskToUpdate.id}/update`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedTask),
+            });
+            const data = await response.json();
+            setTasks(tasks.map((t, i) => (i === index ? data : t)));
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
     };
 
+    // Remove a task
+    const removeTask = async (index) => {
+        const taskToDelete = tasks[index];
+
+        try {
+            await fetch(`http://localhost:8000/api/todos/${taskToDelete.id}/delete`, {
+                method: "DELETE",
+            });
+            setTasks(tasks.filter((_, i) => i !== index));
+        } catch (error) {
+            console.error("Error deleting task:", error);
+        }
+    };
+
+    // Set task for editing
     const editTask = (index) => {
-        setTask(tasks[index].name);
+        setTask(tasks[index].title);
         setEditIndex(index);
     };
 
-    const removeTask = (index) => {
-        setTasks(tasks.filter((_, i) => i !== index));
-    };
-
-
+    // Filter tasks
     const filteredTasks = tasks.filter((t) => {
         if (filter === "all") return true;
         if (filter === "completed") return t.completed;
-        if (filter === "pending") return !t.completed;
+        return !t.completed;
     });
 
-
+    // Toggle dark mode
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
+        localStorage.setItem("theme", darkMode ? "light" : "dark");
     };
 
     return (
         <div style={{
-            height: '100vh',
-            backgroundColor: darkMode ? 'black' : 'lightblue',
-            color: darkMode ? 'white' : 'black',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative',
-            transition: 'all 0.5s ease-in-out'
+            height: "100vh",
+            backgroundColor: darkMode ? "black" : "lightblue",
+            color: darkMode ? "white" : "black",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            transition: "all 0.5s ease-in-out",
+            position: "relative"
         }}>
-
-            <button
-                onClick={toggleDarkMode}
-                style={{
-                    position: 'absolute',
-                    top: '20px',
-                    left: '20px',
-                    backgroundColor: darkMode ? 'lightblue' : 'lightblue',
-                    color: 'white',
-                    padding: '10px 20px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    borderColor : "white",
-                    
-                }}
-            >
-                {darkMode ? '🤍 ' : '🖤 '}
+            <button onClick={toggleDarkMode} style={{
+                position: "absolute", top: "20px", left: "20px",
+                backgroundColor: "lightblue", color: "white", padding: "10px 20px",
+                border: "none", borderRadius: "5px"
+            }}>
+                {darkMode ? "☀️" : "🌙"}
             </button>
 
-
             <div style={{
-                backgroundColor: darkMode ? 'black' : 'lightblue',
-                padding: '30px',
-                borderRadius: '10px',
-                boxShadow: darkMode 
-                    ? '0 10px 30px rgba(255, 255, 255, 0.1)' 
-                    : '0 10px 30px rgba(0, 0, 0, 0.1)',
-                width: '400px',
-                transition: 'all 0.5s ease-in-out'
-
+                backgroundColor: darkMode ? "black" : "lightblue",
+                padding: "30px", borderRadius: "10px",
+                boxShadow: darkMode ? "0 10px 30px rgba(255, 255, 255, 0.1)" : "0 10px 30px rgba(0, 0, 0, 0.1)",
+                width: "400px", transition: "all 0.5s ease-in-out"
             }}>
-                
-                <div style={{ textAlign: 'center' }}>
-                    <h2>✅ Todo-List App</h2>
-                </div>
+                <h2 style={{ textAlign: "center" }}>✅ Todo-List App</h2>
 
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                    <input
-                        type="text"
-                        placeholder="Add a new task..."
-                        value={task}
-                        onChange={(e) => setTask(e.target.value)}
+                <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+                    <input type="text" placeholder="Add a new task..."
+                        value={task} onChange={(e) => setTask(e.target.value)}
                         style={{
-                            padding: '10px',
-                            border: '1px solid #ccc',
-                            borderRadius: '5px',
-                            width: '100%',
-                            backgroundColor: darkMode ? 'white' : 'white',
-                            color: darkMode ? 'white' : 'black'
-                        }}
-                    />
-                    <button
-                        onClick={addTask}
-                        style={{
-                            backgroundColor: editIndex !== null ? '#FFA500' : '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            padding: '10px 15px',
-                            borderRadius: '5px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        {editIndex !== null ? 'Update' : '➕ Add'}
+                            padding: "10px", border: "1px solid #ccc", borderRadius: "5px",
+                            width: "100%", backgroundColor: "white", color: "black"
+                        }} />
+                    <button onClick={addTask} style={{
+                        backgroundColor: editIndex !== null ? "#FFA500" : "#4CAF50",
+                        color: "white", border: "none", padding: "10px 15px", borderRadius: "5px"
+                    }}>
+                        {editIndex !== null ? "Update" : "➕ Add"}
                     </button>
                 </div>
 
-                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                    {["all", "completed", "pending"].map(f => (
+                        <button key={f} onClick={() => setFilter(f)} style={{
+                            backgroundColor: filter === f ? "#007bff" : "#e0e0e0",
+                            color: filter === f ? "white" : "black",
+                            padding: "10px 20px", border: "none", borderRadius: "5px"
+                        }}>
+                            {f.charAt(0).toUpperCase() + f.slice(1)}
+                        </button>
+                    ))}
+                </div>
 
-<div style={{ 
-    marginBottom: '20px', 
-    textAlign: 'center', 
-    display: 'flex', 
-    justifyContent: 'center', 
-    gap: '10px' 
-}}>
-    <button
-        onClick={() => setFilter("all")}
-        style={{
-            backgroundColor: filter === "all" ? '#007bff' : '#e0e0e0',
-            color: filter === "all" ? 'white' : 'black',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: 'all 0.3s'
-        }}
-    >
-        All Tasks
-    </button>
+                <ul style={{ marginTop: "20px", padding: "0" }}>
+                    {filteredTasks.length === 0 ? <p>No tasks listed.</p> : filteredTasks.map((t, index) => (
+                        <li key={index} style={{
+                            display: "flex", justifyContent: "space-between",
+                            padding: "10px", borderBottom: "1px solid #e0e0e0"
+                        }}>
+                            <span style={{
+                                textDecoration: t.completed ? "line-through" : "none",
+                                color: t.completed ? "#32CD32" : "black"
+                            }}>{t.title}</span>
 
-    <button
-        onClick={() => setFilter("completed")}
-        style={{
-            backgroundColor: filter === "completed" ? '#32CD32' : '#e0e0e0',
-            color: filter === "completed" ? 'white' : 'black',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: 'all 0.3s'
-        }}
-    >
-        Completed
-    </button>
-
-    <button
-        onClick={() => setFilter("pending")}
-        style={{
-            backgroundColor: filter === "pending" ? '#FF6347' : '#e0e0e0',
-            color: filter === "pending" ? 'white' : 'black',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: 'all 0.3s'
-        }}
-    >
-        Pending
-    </button>
-</div>
-
-</div>
-
-
-                <ul style={{ marginTop: '20px', padding: '0' }}>
-                    {filteredTasks.length === 0 ? (
-                        <p>No task listed.</p>
-                    ) : (
-                        filteredTasks.map((t, index) => (
-                            <li key={index}
-                                style={{
-                                    display: 'flex',
-                                   
-                                    padding: '10px',
-                                    borderBottom: '1px solid #e0e0e0'
-                                }}
-                            >
-                                <span style={{
-                                    textDecoration: t.completed ? 'line-through' : 'none',
-                                    color: t.completed ? '#32CD32' : 'black'
-                                }}>
-                                    {t.name}
-                                </span>
-
-                                <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button
-                                        onClick={() => markCompleted(index)}
-                                        style={{
-                                            backgroundColor: '#32CD32',
-                                            color: 'white',
-                                            padding: '5px 10px',
-                                            border: 'none',
-                                            borderRadius: '5px'
-                                        }}>
-                                        Completed
-                                    </button>
-                                    <button
-                                        onClick={() => editTask(index)}
-                                        style={{
-                                            backgroundColor: 'pink',
-                                            color: 'white',
-                                            padding: '5px 10px',
-                                            border: 'none',
-                                            borderRadius: '5px'
-                                        }}>
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => removeTask(index)}
-                                        style={{
-                                            backgroundColor: 'red',
-                                            color: 'white',
-                                            padding: '5px 10px',
-                                            border: 'none',
-                                            borderRadius: '5px'
-                                        }}>
-                                        Delete
-                                    </button>
-                                </div>
-                            </li>
-                        ))
-                    )}
+                            <div style={{ display: "flex", gap: "5px" }}>
+                                <button onClick={() => markCompleted(index)} style={{
+                                    backgroundColor: "#32CD32", color: "white", padding: "5px 10px",
+                                    border: "none", borderRadius: "5px"
+                                }}>✔</button>
+                                <button onClick={() => editTask(index)} style={{
+                                    backgroundColor: "pink", color: "white", padding: "5px 10px",
+                                    border: "none", borderRadius: "5px"
+                                }}>✏️</button>
+                                <button onClick={() => removeTask(index)} style={{
+                                    backgroundColor: "red", color: "white", padding: "5px 10px",
+                                    border: "none", borderRadius: "5px"
+                                }}>❌</button>
+                            </div>
+                        </li>
+                    ))}
                 </ul>
             </div>
         </div>
