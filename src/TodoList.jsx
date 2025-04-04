@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import axios from 'axios'; 
+
+const API_URL = "https://todo-list-w-api.onrender.com/api/todos/";
 
 export default function TodoList() {
     const [tasks, setTasks] = useState([]);
@@ -15,34 +18,21 @@ export default function TodoList() {
     }, [darkMode]);
 
     const fetchTasks = async () => {
-        const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/");
-        const data = await response.json();
-        setTasks(data);
+        try {
+            const response = await axios.get(API_URL);
+            setTasks(response.data);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
     };
 
     const addTask = async () => {
         if (task.trim() === "") return;
         const newTask = { title: task, completed: false };
-    
+
         try {
-            console.log("Adding Task:", newTask); // ✅ Debug log
-            const response = await fetch("https://todo-list-w-api.onrender.com/api/todos/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newTask),
-            });
-    
-            console.log("Response Status:", response.status); // ✅ Debug log
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Failed to add task:", errorText); // ✅ Print error response
-                throw new Error("Failed to add task");
-            }
-    
-            const data = await response.json();
-            console.log("Task Added Successfully:", data); // ✅ Debug log
-            setTasks([...tasks, data]);
+            const response = await axios.post(API_URL, newTask);
+            setTasks([...tasks, response.data]);
             setTask("");
         } catch (error) {
             console.error("Error adding task:", error);
@@ -55,15 +45,11 @@ export default function TodoList() {
 
         const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
 
-        const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${id}/`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedTask),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            setTasks(tasks.map((t) => (t.id === id ? data : t)));
+        try {
+            const response = await axios.put(`${API_URL}${id}/`, updatedTask);
+            setTasks(tasks.map((t) => (t.id === id ? response.data : t)));
+        } catch (error) {
+            console.error("Error updating task:", error);
         }
     };
 
@@ -80,23 +66,23 @@ export default function TodoList() {
 
         const updatedTask = { title: task, completed: false };
 
-        const response = await fetch(`https://todo-list-w-api.onrender.com/api/todos/${editId}/`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedTask),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            setTasks(tasks.map((t) => (t.id === editId ? data : t)));
+        try {
+            const response = await axios.put(`${API_URL}${editId}/`, updatedTask);
+            setTasks(tasks.map((t) => (t.id === editId ? response.data : t)));
             setEditId(null);
             setTask("");
+        } catch (error) {
+            console.error("Error updating task:", error);
         }
     };
 
     const removeTask = async (id) => {
-        await fetch(`https://todo-list-w-api.onrender.com/api/todos/${id}/`, { method: "DELETE" });
-        setTasks(tasks.filter((t) => t.id !== id));
+        try {
+            await axios.delete(`${API_URL}${id}/`);
+            setTasks(tasks.filter((t) => t.id !== id));
+        } catch (error) {
+            console.error("Error deleting task:", error);
+        }
     };
 
     const filteredTasks = tasks.filter((t) => {
