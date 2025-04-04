@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from 'axios';
 
-const API_URL = "https://todo-list-w-api.onrender.com/api/todos/"; // Your API endpoint
+const API_URL = "https://todo-list-w-api.onrender.com/api/todos/"; // Base URL for the API
 
 export default function TodoList() {
     const [tasks, setTasks] = useState([]);
@@ -20,7 +20,7 @@ export default function TodoList() {
     // Function to fetch tasks from backend
     const fetchTasks = async () => {
         try {
-            const response = await axios.get(API_URL);
+            const response = await axios.get("https://todo-list-w-api.onrender.com/api/todos/fetch"); // Correct path for fetching tasks
             setTasks(response.data);
         } catch (error) {
             console.error("Error fetching tasks:", error);
@@ -33,7 +33,7 @@ export default function TodoList() {
         const newTask = { title: task, completed: false };
 
         try {
-            const response = await axios.post(API_URL, newTask);
+            const response = await axios.post("https://todo-list-w-api.onrender.com/api/todos/create", newTask); // Correct path for creating a task
             setTasks([...tasks, response.data]); // Update tasks state with the newly added task
             setTask(""); // Clear the input field
         } catch (error) {
@@ -49,7 +49,7 @@ export default function TodoList() {
         const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
 
         try {
-            const response = await axios.put(`${API_URL}${id}/`, updatedTask);
+            const response = await axios.put(`https://todo-list-w-api.onrender.com/api/todos/${id}/update`, updatedTask); // Update path for updating task
             setTasks(tasks.map((t) => (t.id === id ? response.data : t))); // Update the state with the updated task
         } catch (error) {
             console.error("Error updating task:", error);
@@ -72,7 +72,7 @@ export default function TodoList() {
         const updatedTask = { title: task, completed: false };
 
         try {
-            const response = await axios.put(`${API_URL}${editId}/`, updatedTask);
+            const response = await axios.put(`https://todo-list-w-api.onrender.com/api/todos/${editId}/update`, updatedTask); // Update path for updating task
             setTasks(tasks.map((t) => (t.id === editId ? response.data : t))); // Update state with the updated task
             setEditId(null); // Reset the edit mode
             setTask(""); // Clear the input field
@@ -84,7 +84,7 @@ export default function TodoList() {
     // Function to delete a task
     const removeTask = async (id) => {
         try {
-            await axios.delete(`${API_URL}${id}/`);
+            await axios.delete(`https://todo-list-w-api.onrender.com/api/todos/${id}/delete`); // Correct path for deleting task
             setTasks(tasks.filter((t) => t.id !== id)); // Remove task from the state
         } catch (error) {
             console.error("Error deleting task:", error);
