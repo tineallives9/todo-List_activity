@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from 'axios'; 
+import axios from 'axios';
 
-const API_URL = "https://todo-list-w-api.onrender.com/api/todos/";
+const API_URL = "https://todo-list-w-api.onrender.com/api/todos/"; // Your API endpoint
 
 export default function TodoList() {
     const [tasks, setTasks] = useState([]);
@@ -17,6 +17,7 @@ export default function TodoList() {
         fetchTasks();  // Fetch tasks on component mount
     }, [darkMode]);
 
+    // Function to fetch tasks from backend
     const fetchTasks = async () => {
         try {
             const response = await axios.get(API_URL);
@@ -26,19 +27,21 @@ export default function TodoList() {
         }
     };
 
+    // Function to add a task to the backend
     const addTask = async () => {
         if (task.trim() === "") return;
         const newTask = { title: task, completed: false };
 
         try {
             const response = await axios.post(API_URL, newTask);
-            setTasks([...tasks, response.data]);
-            setTask("");
+            setTasks([...tasks, response.data]); // Update tasks state with the newly added task
+            setTask(""); // Clear the input field
         } catch (error) {
             console.error("Error adding task:", error);
         }
     };
 
+    // Function to mark a task as completed
     const markCompleted = async (id) => {
         const taskToUpdate = tasks.find((t) => t.id === id);
         if (!taskToUpdate) return;
@@ -47,12 +50,13 @@ export default function TodoList() {
 
         try {
             const response = await axios.put(`${API_URL}${id}/`, updatedTask);
-            setTasks(tasks.map((t) => (t.id === id ? response.data : t)));
+            setTasks(tasks.map((t) => (t.id === id ? response.data : t))); // Update the state with the updated task
         } catch (error) {
             console.error("Error updating task:", error);
         }
     };
 
+    // Function to start editing a task
     const editTask = (id) => {
         const taskToEdit = tasks.find((t) => t.id === id);
         if (taskToEdit) {
@@ -61,6 +65,7 @@ export default function TodoList() {
         }
     };
 
+    // Function to update a task
     const updateTask = async () => {
         if (!editId || task.trim() === "") return;
 
@@ -68,31 +73,35 @@ export default function TodoList() {
 
         try {
             const response = await axios.put(`${API_URL}${editId}/`, updatedTask);
-            setTasks(tasks.map((t) => (t.id === editId ? response.data : t)));
-            setEditId(null);
-            setTask("");
+            setTasks(tasks.map((t) => (t.id === editId ? response.data : t))); // Update state with the updated task
+            setEditId(null); // Reset the edit mode
+            setTask(""); // Clear the input field
         } catch (error) {
             console.error("Error updating task:", error);
         }
     };
 
+    // Function to delete a task
     const removeTask = async (id) => {
         try {
             await axios.delete(`${API_URL}${id}/`);
-            setTasks(tasks.filter((t) => t.id !== id));
+            setTasks(tasks.filter((t) => t.id !== id)); // Remove task from the state
         } catch (error) {
             console.error("Error deleting task:", error);
         }
     };
 
+    // Filter tasks based on the filter state (all, completed, pending)
     const filteredTasks = tasks.filter((t) => {
         if (filter === "all") return true;
         if (filter === "completed") return t.completed;
         return !t.completed;
     });
 
+    // Function to toggle dark mode
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
+        localStorage.setItem("theme", darkMode ? "light" : "dark"); // Save the theme preference in local storage
     };
 
     return (
